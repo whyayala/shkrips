@@ -7,3 +7,10 @@ echo | openssl s_client -showcerts -verify 5 -connect $1:443 -servername $1 < /d
 podman machine ssh podman-machine-default "mkdir -p /etc/containers/certs.d/$1" 
 podman machine cp ./cert.pem podman-machine-default:/etc/containers/certs.d/$1/ca.crt
 podman machine ssh podman-machine-default "update-ca-trust" 
+
+# Because podman is cucked by docker, the compose extension is actually just an alias to docker compose.
+# The super fun and awesome thing about this that's not well documented at all is that podman login stores
+# credentials in a different location than where docker compose looks for them. The simplest solution is to
+# just create a symlink from where podman login stores the cred to where docker compose will be looking for
+# them.
+ln -s ~/.config/containers/auth.json ~/.docker/config.json

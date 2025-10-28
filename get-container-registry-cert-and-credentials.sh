@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Verified on macos. Will write certificate for the passed in hostname to a file.
-echo | openssl s_client -showcerts -verify 5 -connect $1:443 -servername $1 < /dev/null | openssl x509 > cert.pem
+echo | openssl s_client -showcerts -verify 5 -connect $1:443 -servername $1 < /dev/null | openssl x509 --multi > cert.pem
 
 # Podman by default does not run in rootful mode, so we will enable it temporarily.
 echo "--- Enabling rootful mode for podman to add cert ---"
@@ -26,5 +26,5 @@ podman machine start
 # credentials in a different location than where docker compose looks for them. The simplest solution is to
 # just create a symlink from where podman login stores the cred to where docker compose will be looking for
 # them.
-echo "--- Creating symlink for compose to find podman auth credentials ---"
+echo "--- Creating symlink for docker compose to find podman auth credentials ---"
 ln -s ~/.config/containers/auth.json ~/.docker/config.json

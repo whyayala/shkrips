@@ -27,4 +27,9 @@ podman machine start
 # just create a symlink from where podman login stores the cred to where docker compose will be looking for
 # them.
 echo "--- Creating symlink for docker compose to find podman auth credentials ---"
+# If a config.json file already exists, warn the user and back it up
+if [ -f ~/.docker/config.json ]; then
+    echo "Warning: ~/.docker/config.json already exists. Backing it up to ~/.docker/config.json.bak"
+    mv ~/.docker/config.json ~/.docker/config.json.bak
+fi
 ln -s ~/.config/containers/auth.json ~/.docker/config.json

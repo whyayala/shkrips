@@ -21,11 +21,10 @@ podman machine stop
 podman machine set --rootful=false
 podman machine start
 
-# Because podman is cucked by docker, the compose extension is actually just an alias to docker compose.
-# The super fun and awesome thing about this that's not well documented at all is that podman login stores
-# credentials in a different location than where docker compose looks for them. The simplest solution is to
-# just create a symlink from where podman login stores the cred to where docker compose will be looking for
-# them.
+# The compose extension is actually just an alias to docker compose. The super fun and awesome thing about 
+# this that's not well documented at all is that podman login stores credentials in a different location than
+# where docker compose looks for them. The simplest solution is to just create a symlink from where podman 
+# login stores the cred to where docker compose will be looking for them.
 echo "--- Creating symlink for docker compose to find podman auth credentials ---"
 # If a config.json file already exists, warn the user and back it up
 if [ -f ~/.docker/config.json ]; then

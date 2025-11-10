@@ -5,7 +5,7 @@ echo "Usage: ./setup-registry-for-podman.sh <registry-hostname>"
 
 # Call get-registry-certificate.sh to get the cert for the registry
 echo "--- Fetching certificate for $1 ---"
-./get-hostname-certificate.sh "$1" "cert.pem"
+./get-certificate.sh "$1" "cert.pem"
 
 # Podman by default does not run in rootful mode, so we will enable it temporarily.
 echo "--- Enabling rootful mode for podman to add cert ---"

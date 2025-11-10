@@ -1,7 +1,11 @@
 #!/bin/sh
 
-# Verified on macos. Will write certificate for the passed in hostname to a file.
-echo | openssl s_client -showcerts -verify 5 -connect $1:443 -servername $1 < /dev/null | openssl x509 --multi > cert.pem
+# Usage: ./setup-registry-for-podman.sh <registry-hostname>
+echo "Usage: ./setup-registry-for-podman.sh <registry-hostname>"
+
+# Call get-registry-certificate.sh to get the cert for the registry
+echo "--- Fetching certificate for $1 ---"
+./get-hostname-certificate.sh "$1" "cert.pem"
 
 # Podman by default does not run in rootful mode, so we will enable it temporarily.
 echo "--- Enabling rootful mode for podman to add cert ---"
@@ -21,10 +25,10 @@ podman machine stop
 podman machine set --rootful=false
 podman machine start
 
-# The compose extension is actually just an alias to docker compose. The super fun and awesome thing about 
+# The compose extension for podman desktop is actually just an alias to docker compose. The super fun and awesome thing about 
 # this that's not well documented at all is that podman login stores credentials in a different location than
 # where docker compose looks for them. The simplest solution is to just create a symlink from where podman 
-# login stores the cred to where docker compose will be looking for them.
+# login stores the cred to where docker compose will be looking for them. 
 echo "--- Creating symlink for docker compose to find podman auth credentials ---"
 # If a config.json file already exists, warn the user and back it up
 if [ -f ~/.docker/config.json ]; then

@@ -11,8 +11,9 @@ else
     exit 1
 fi
 
-# Verified on macos. Will write certificate for the passed in hostname to a file.
-echo | openssl s_client -showcerts -servername "$REGISTRY_HOSTNAME" -verify 5 -connect "$REGISTRY_HOSTNAME:443" 2>/dev/null | openssl x509 --multi > cert.crt
+# Call get-certificate.sh to get the cert for the registry
+echo "--- Fetching certificate for $1 ---"
+./get-certificate.sh "$1" "cert.crt"
 
 # Remove protocol for npmrc configuration
 REGISTRY_URL_NO_PROTOCOL=${REGISTRY_URL#http://}

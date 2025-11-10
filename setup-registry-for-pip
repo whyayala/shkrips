@@ -1,0 +1,58 @@
+#!/bin/sh
+# POSIX-compliant script to configure pip for Artifactory access
+
+# Usage:
+#   ./setup-registry-for-pip.sh [registry_url] [username] [token] [cert_path] [target_dir]
+#
+# Example:
+#   ./setup-registry-for-pip.sh "https://artifactory.company.com/api/pypi/python/simple" "myusername" "mytoken123" "/certs/root.crt" "/app"
+
+set -eu
+
+REGISTRY_URL=${1:-}
+ARTIFACTORY_USERNAME=${2:-}
+TOKEN=${3:-}
+CERT_PATH=${4:-}
+# TARGET_DIR is optional; defaults to <current working directory>/.venv
+TARGET_DIR=${5:-"./.venv"}
+
+# Echo to use where their venv is located
+# e.g., TARGET_DIR="/path/to/venv"
+echo "Note: This script assumes you have selected a python version via pyenv or you are using system python."
+echo "Using target directory for virtual environment for $(python --version): $TARGET_DIR"
+
+# Create virtual environment and activate it
+python -m venv "$TARGET_DIR"
+source "$TARGET_DIR/bin/activate"
+
+# Validate inputs
+if [ -z "$REGISTRY_URL" ] || [ -z "$TOKEN" ] || [ -z "$CERT_PATH" ]; then
+  echo "Usage: $0 <registry_url> <token> <cert_path> [target_dir]" >&2
+  exit 1
+fi
+
+# Call get-registry-certificate.sh to get the cert for the registry
+REGISTRY_HOSTNAME=$(echo "$REGISTRY_URL" | awk -F[/:] '{print $4}')
+echo "--- Fetching certificate for $REGISTRY_HOSTNAME ---"
+./scripts/get-certificate.sh "$REGISTRY_HOSTNAME" "$CERT_PATH"
+
+# Ensure cert file exists
+if [ ! -f "$CERT_PATH" ]; then
+  echo "Error: Certificate file not found at $CERT_PATH" >&2
+  exit 1
+fi
+
+# Make sure target dir exists
+mkdir -p "$TARGET_DIR"
+
+# Configure pip.conf
+PIP_CONF_PATH="$TARGET_DIR/pip.conf"
+
+cat > "$PIP_CONF_PATH" <<EOF
+[global]
+index-url = https://${ARTIFACTORY_USERNAME}:${TOKEN}@${REGISTRY_URL#https://}
+trusted-host = $(echo "$REGISTRY_URL" | awk -F/ '{print $3}')
+cert = ${CERT_PATH}
+EOF
+
+echo "✅ pip.conf configured at $PIP_CONF_PATH"
